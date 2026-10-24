@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Numbers - ThirdWave SMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* TEMA TERANG (LIGHT MODE) */
+        .live-banner {
+            background: linear-gradient(135deg, #4F46E5, #7C3AED);
+            border-radius: 12px; padding: 24px; margin-bottom: 24px;
+            color: white; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2);
+        }
+        .live-banner h2 { font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;}
+        .live-banner p { font-size: 0.85rem; opacity: 0.9; line-height: 1.5; margin-bottom: 20px; max-width: 800px; }
+        .badge-today { background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; display: inline-block; }
+
+        .stream-panel { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .stream-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+        .stream-header h3 { font-size: 1rem; color: var(--text-main); font-weight: 600; }
+        .stream-header .live-indicator { font-size: 0.75rem; color: #10B981; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .dot { width: 8px; height: 8px; background-color: #10B981; border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+
+        .stream-toolbar { padding: 16px 20px; display: flex; gap: 12px; background-color: var(--card-bg); }
+        .search-input { flex: 1; background-color: #FAFAFA; border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 16px; border-radius: 8px; font-family: var(--font-family); outline: none; }
+        .search-input:focus { border-color: var(--primary-blue); background-color: #fff; }
+        .show-select { background-color: #FAFAFA; border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 16px; border-radius: 8px; font-family: var(--font-family); outline: none; cursor: pointer; }
+
+        .number-list { display: flex; flex-direction: column; }
+        .number-item { padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; transition: background 0.2s; }
+        .number-item:hover { background-color: #F9FAFB; }
+        
+        .item-left { display: flex; flex-direction: column; gap: 4px; max-width: 70%; }
+        .item-title { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
+        .item-number { font-size: 0.8rem; color: var(--text-muted); }
+        .item-message { font-size: 0.8rem; color: #4B5563; margin-top: 6px; line-height: 1.4; word-wrap: break-word; }
+
+        .item-right { display: flex; align-items: center; gap: 20px; }
+        .time-info { text-align: right; }
+        .time-info .seconds { font-size: 0.85rem; color: var(--primary-blue); font-weight: 600; }
+        .time-info .clock { font-size: 0.75rem; color: var(--text-muted); }
+
+        .service-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; font-weight: bold; color: white; text-transform: uppercase; }
+        .icon-wa { background-color: #25D366; } .icon-tg { background-color: #229ED9; } .icon-fb { background-color: #1877F2; }
+        .icon-apple { background-color: #000; } .icon-ding { background-color: #EAB308; color: black;} .icon-bees { background-color: #7C3AED; }
+        .icon-paypal { background-color: #003087; } .icon-netflix { background-color: #E50914; } .icon-comeon { background-color: #009688; }
+        .icon-bigo { background-color: #00BFFF; } .icon-authmsg { background-color: #4B5563; } .icon-wechat { background-color: #07C160; }
+        .icon-sumsub { background-color: #3B82F6; }
+
+        .price { font-size: 0.8rem; color: #10B981; font-weight: 600; background: rgba(16, 185, 129, 0.1); padding: 4px 8px; border-radius: 4px; }
+        .btn-add-number { width: 32px; height: 32px; border-radius: 6px; background-color: #F3F4F6; border: 1px solid var(--border-color); color: var(--primary-blue); font-size: 1.2rem; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.2s; }
+        .btn-add-number:hover { background-color: var(--primary-blue); color: white; border-color: var(--primary-blue); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* MODAL ADD NUMBERS */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(15, 23, 42, 0.6); z-index: 2000; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(2px); }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background-color: var(--card-bg); width: 100%; max-width: 600px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: fadeIn 0.3s ease; display: flex; flex-direction: column; max-height: 90vh; }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 1.1rem; color: var(--text-main); font-weight: 600; display: flex; align-items: center; gap: 8px;}
+        .close-modal { background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; }
+        .modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+        .modal-select { width: 100%; padding: 14px 16px; background-color: #FAFAFA; border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; font-family: var(--font-family); font-size: 0.95rem; outline: none; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 16px center; background-size: 16px; }
+        .termination-box { background-color: #FAFAFA; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; }
+        .termination-box label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block; font-weight: 600;}
+        .termination-box .term-value { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        .info-card { background-color: #FAFAFA; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; text-align: center; }
+        .info-card .label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 8px; }
+        .info-card .value { font-size: 1.1rem; font-weight: 700; color: #10B981; } 
+        .info-card .value.white { color: var(--text-main); } 
+        .qty-options { display: flex; gap: 10px; flex-wrap: wrap; }
+        .qty-btn { flex: 1; min-width: 80px; padding: 12px; background-color: #FAFAFA; border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; font-family: var(--font-family); font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .qty-btn:hover { background-color: #F3F4F6; }
+        .qty-btn.active { background-color: var(--primary-blue); border-color: var(--primary-blue); color: white; }
+        .help-text { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+        .notice-box { background-color: #FFF3CD; border: 1px solid #FFEEBA; border-left: 4px solid #F59E0B; border-radius: 8px; padding: 16px; font-size: 0.85rem; color: #856404; line-height: 1.5; }
+        .notice-box strong { color: #B45309; }
+        .modal-footer { padding: 20px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
+        .btn-cancel { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: var(--font-family); }
+        .btn-submit { background-color: var(--primary-blue); border: none; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: var(--font-family); display: flex; align-items: center; gap: 8px; }
+
+        @media (max-width: 768px) {
+            .stream-toolbar { flex-direction: column; }
+            .item-right { flex-direction: column; align-items: flex-end; gap: 8px; }
+            .item-left { max-width: 100%; }
+            .info-grid { grid-template-columns: 1fr; }
+            .modal-content { margin: 10px; max-height: 95vh; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar-container"></div>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <div class="page-title">
+                    <h1>Get Numbers</h1>
+                    <p>Real-time SMS verification streams</p>
+                </div>
+            </div>
+            
+            <div class="user-profile">
+                <a href="alerts.html" class="notification" title="In-app Alerts">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                </a>
+                <div class="profile-trigger" id="profileTrigger">
+                    <div class="avatar" id="userAvatar">D</div>
+                    <div class="profile-info">
+                        <span class="profile-name" id="headerUsername">Developer</span>
+                        <span class="profile-email" id="headerEmail">dev@thirdwave.cc</span>
+                    </div>
+                    <svg class="chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="settings.html?tab=profile" class="dropdown-item">My Profile</a>
+                    <a href="settings.html?tab=security" class="dropdown-item">Account Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item" id="logoutBtn">Sign Out</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="live-banner">
+            <h2><i class="fa-solid fa-bolt"></i> Live Numbers</h2>
+            <p>Numbers you add land in your account for 15 minutes — testing only, no balance credited. Want a range added? Test it, then send us the range name after receiving codes on your test numbers.</p>
+            <div class="badge-today">Today: 0 / 300</div>
+        </div>
+
+        <div class="stream-panel">
+            <div class="stream-header">
+                <h3>Live Test Stream</h3>
+                <div class="live-indicator"><div class="dot"></div> SHOWING 30 - LIVE - UPDATED 00:00:00</div>
+            </div>
+            <div class="stream-toolbar">
+                <input type="text" class="search-input" placeholder="Search by app (WhatsApp...), range, country or number — instant filter">
+                <select class="show-select"><option>Show: 30</option><option>Show: 50</option><option>Show: 100</option></select>
+            </div>
+            <div class="number-list">
+                <!-- Item Awal -->
+                <div class="number-item">
+                    <div class="item-left">
+                        <div class="item-title">INDONESIA-THIRDW-13</div>
+                        <div class="item-number">+6282134849275</div>
+                        <div class="item-message">Kode verifikasi WhatsApp Anda adalah 123456. Jangan bagikan kode ini.</div>
+                    </div>
+                    <div class="item-right">
+                        <div class="time-info"><div class="seconds">29s</div><div class="clock">18:21:51</div></div>
+                        <div class="service-icon icon-wa"><i class="fa-brands fa-whatsapp"></i></div>
+                        <div class="price">$0.0110</div>
+                        <button class="btn-add-number" onclick="openModal('INDONESIA', '+62', '13', '$0.0110')"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL POP-UP ADD NUMBERS -->
+    <div class="modal-overlay" id="addNumbersModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg> Add numbers</h2>
+                <button class="close-modal" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <select class="modal-select" id="rangeSelect"><option value="" disabled selected>Select a range...</option></select>
+                <div class="termination-box"><label>Termination</label><div class="term-value" id="terminationValue">-</div></div>
+                <div class="info-grid">
+                    <div class="info-card"><div class="label">Rate</div><div class="value" id="rateValue">$0.0000 USD</div></div>
+                    <div class="info-card"><div class="label">SMS / Hour</div><div class="value white" id="smsHourValue">0</div></div>
+                    <div class="info-card"><div class="label">SMS / Day</div><div class="value white" id="smsDayValue">0</div></div>
+                </div>
+                <div class="qty-options">
+                    <button type="button" class="qty-btn" data-qty="500">500</button>
+                    <button type="button" class="qty-btn" data-qty="1000">1.000</button>
+                    <button type="button" class="qty-btn" data-qty="2000">2.000</button>
+                    <button type="button" class="qty-btn" data-qty="5000">5.000</button>
+                    <button type="button" class="qty-btn" data-qty="10000">10.000</button>
+                </div>
+                <p class="help-text">You can request up to 20 numbers at a time · order: Random · numbers stay with you 15 minutes then auto-withdraw.</p>
+                <div class="notice-box"><strong>⭐ Need a larger volume for production work?</strong> You can request bigger quantities — if codes are already landing on the same range you added, contact the admin to scale your capacity instantly.</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" id="cancelModalBtn">Cancel</button>
+                <button type="button" class="btn-submit" id="submitAddBtn">Add numbers</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="menu.js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        // FITUR PENCARIAN
+        document.querySelector('.search-input').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.number-item').forEach(item => {
+                item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'flex' : 'none';
+            });
+        });
+
+        // WAKTU UPDATE REAL-TIME
+        const updateTimeElement = document.querySelector('.live-indicator');
+        function updateClock() {
+            const now = new Date();
+            updateTimeElement.innerHTML = `<div class="dot"></div> SHOWING 30 - LIVE - UPDATED ${now.toLocaleTimeString('en-GB')}`;
+        }
+        setInterval(updateClock, 1000); updateClock(); 
+
+        // DATABASE SIMULASI
+        const databaseNegara = [
+            { code: '+995', name: 'GEORGIA', lang: 'თქვენი კოდია: {CC}. არავის გაუზიაროთ.' },
+            { code: '+49', name: 'GERMANY', lang: 'Ihr Code lautet: {CC}. Teilen Sie diesen Code nicht mit anderen.' },
+            { code: '+224', name: 'GUINEA', lang: 'Votre code est {CC}. Ne partagez pas ce code.' },
+            { code: '+60', name: 'MALAYSIA', lang: 'Kod anda ialah {CC}. Jangan kongsi kod ini.' },
+            { code: '+223', name: 'MALI', lang: 'Votre code est {CC}. Ne le partagez avec personne.' },
+            { code: '+94', name: 'SRI LANKA', lang: 'ඔබගේ කේතය {CC} වේ. මෙය අන් අය සමඟ බෙදා නොගන්න.' },
+            { code: '+249', name: 'SUDAN', lang: 'رمزك هو {CC}. لا تشارك هذا الرمز مع أي شخص.' },
+            { code: '+255', name: 'TANZANIA', lang: 'Nambari yako ni {CC}. Usishirikishe mtu yeyote.' },
+            { code: '+228', name: 'TOGO', lang: 'Votre code est {CC}. Ne partagez pas ce code.' },
+            { code: '+591', name: 'BOLIVIA', lang: 'Tu código es {CC}. No lo compartas.' },
+            { code: '+92', name: 'PAKISTAN', lang: 'آپ کا کوڈ {CC} ہے۔ یہ کوڈ کسی کے ساتھ شیئر نہ کریں۔' },
+            { code: '+20', name: 'EGYPT', lang: 'رمزك هو {CC}. يرجى عدم مشاركته.' },
+            { code: '+62', name: 'INDONESIA', lang: 'Kode Anda adalah {CC}. Jangan bagikan kode ini.' },
+            { code: '+967', name: 'YEMEN', lang: 'رمزك هو {CC}. لا تشاركه مع أي شخص.' },
+            { code: '+84', name: 'VIETNAM', lang: 'Mã của bạn là {CC}. Không chia sẻ mã này.' },
+            { code: '+86', name: 'CHINA', lang: '您的验证码是 {CC}。请勿与任何人分享此代码。' },
+            { code: '+373', name: 'MOLDOVA', lang: 'Codul dvs. este {CC}. Nu îl partajați.' },
+            { code: '+977', name: 'NEPAL', lang: 'तपाईंको कोड {CC} हो। यो कोड कसैलाई नदिनुहोस्।' },
+            { code: '+992', name: 'TAJIKISTAN', lang: 'Рами шумо {CC} аст. Онро ба касе надиҳед.' },
+            { code: '+232', name: 'SIERRA LEONE', lang: 'Yu code na {CC}. Nɔ shar am wit ɛnibɔdi.' },
+            { code: '+964', name: 'IRAQ', lang: 'رمزك هو {CC}. لا تشاركه مع أي شخص.' },
+            { code: '+225', name: 'IVORY COAST', lang: 'Votre code est {CC}. Ne le partagez pas.' },
+            { code: '+93', name: 'AFGHANISTAN', lang: 'کد شما {CC} است. لطفا آن را با کسی به اشتراک نگذارید.' },
+            { code: '+216', name: 'TUNISIA', lang: 'Votre code est {CC}. Ne le partagez pas.' },
+            { code: '+258', name: 'MOZAMBIQUE', lang: 'O seu código é {CC}. Não partilhe este código.' },
+            { code: '+996', name: 'KYRGYZSTAN', lang: 'Сиздин код {CC}. Аны эч кимге бербеңиз.' },
+            { code: '+970', name: 'PALESTINE', lang: 'رمزك هو {CC}. لا تشاركه مع أي شخص.' },
+            { code: '+972', name: 'ISRAEL', lang: 'הקוד שלך הוא {CC}. אנא אל תשתף קוד זה.' },
+            { code: '+213', name: 'ALGERIA', lang: 'Votre code est {CC}. Ne le partagez pas.' },
+            { code: '+33', name: 'FRANCE', lang: 'Votre code est {CC}. Ne partagez pas ce code.' },
+            { code: '+502', name: 'GUATEMALA', lang: 'Tu código es {CC}. No compartas este código.' },
+            { code: '+1246', name: 'BARBADOS', lang: 'Your code is {CC}. Do not share this code.' },
+            { code: '+593', name: 'ECUADOR', lang: 'Tu código es {CC}. No compartas este código.' },
+            { code: '+974', name: 'QATAR', lang: 'رمزك هو {CC}. لا تشاركه مع أي شخص.' },
+            { code: '+95', name: 'MYANMAR', lang: 'သင်၏ကုဒ်မှာ {CC} ဖြစ်သည်။ ဤကုဒ်ကို မည်သူ့ကိုမျှ မမျှဝေပါနှင့်။' },
+            { code: '+51', name: 'PERU', lang: 'Tu código es {CC}. No compartas este código.' },
+            { code: '+965', name: 'KUWAIT', lang: 'رمزك هو {CC}. لا تشاركه مع أي شخص.' },
+            { code: '+266', name: 'LESOTHO', lang: 'Khoutu ea hau ke {CC}. U se ke oa e arolelana le mang kapa mang.' },
+            { code: '+63', name: 'PHILIPPINES', lang: 'Ang iyong code ay {CC}. Huwag ibahagi ang code na ito.' },
+            { code: '+855', name: 'CAMBODIA', lang: 'កូដរបស់អ្នកគឺ {CC}។ សូមកុំចែករំលែកកូដនេះ។' },
+            { code: '+221', name: 'SENEGAL', lang: 'Votre code est {CC}. Ne partagez pas ce code.' },
+            { code: '+254', name: 'KENYA', lang: 'Nambari yako ya siri ni {CC}. Usishirikishe mtu yeyote.' }
+        ];
+
+        const databaseLayanan = [
+            { name: 'WhatsApp', icon: 'icon-wa', text: '<i class="fa-brands fa-whatsapp"></i>' },
+            { name: 'Telegram', icon: 'icon-tg', text: '<i class="fa-brands fa-telegram"></i>' },
+            { name: 'Facebook', icon: 'icon-fb', text: '<i class="fa-brands fa-facebook-f"></i>' },
+            { name: 'Apple', icon: 'icon-apple', text: '<i class="fa-brands fa-apple"></i>' },
+            { name: 'Ding', icon: 'icon-ding', text: 'D' }, { name: 'PayPal', icon: 'icon-paypal', text: 'P' },
+            { name: 'Netflix', icon: 'icon-netflix', text: 'N' }, { name: 'ComeOn', icon: 'icon-comeon', text: 'C' },
+            { name: 'Bigo', icon: 'icon-bigo', text: 'B' }, { name: 'AuthMSG', icon: 'icon-authmsg', text: 'A' },
+            { name: 'WeChat', icon: 'icon-wechat', text: 'W' }, { name: 'Sumsub', icon: 'icon-sumsub', text: 'S' }
+        ];
+
+        function generateRandomNumber(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+        function generatePhoneNumberByCode(countryCode) {
+            let cleanCode = countryCode.replace('+', ''); let randomDigits = ''; let length = 10; 
+            if (cleanCode === '1246') length = 7; if (cleanCode === '62') length = 11; 
+            for (let i = 0; i < length; i++) { randomDigits += Math.floor(Math.random() * 10); }
+            return cleanCode + randomDigits;
+        }
+        function generateOTP() { return String(Math.floor(100000 + Math.random() * 900000)); }
+
+        function generateNewNumber() {
+            const randomCountry = databaseNegara[Math.floor(Math.random() * databaseNegara.length)];
+            const randomService = databaseLayanan[Math.floor(Math.random() * databaseLayanan.length)];
+            const phoneNumber = generatePhoneNumberByCode(randomCountry.code);
+            const otpCode = generateOTP();
+            
+            let finalMessage = randomCountry.lang.replace('{CC}', otpCode);
+            if (randomService.name === 'Netflix') finalMessage = `Netflix: Tres pasos y nos encargamos del resto. Completa: m.netflix.com/${otpCode}`;
+            else if (randomService.name === 'Bigo') finalMessage = `<#>BIGO LIVE code: ${otpCode}. Don't share it with others.`;
+            else if (randomService.name === 'WeChat') finalMessage = `<WeChat > WeChat code (${otpCode}) may only be used once for account recovery.`;
+            else if (randomService.name === 'Sumsub') finalMessage = `Sumsub - Your verification code is: ${otpCode}`;
+            else if (randomService.name === 'AuthMSG') finalMessage = `Your PCid verification code is: ${otpCode}`;
+            else if (randomService.name === 'ComeOn') finalMessage = `Your verification code is: ${otpCode}`;
+            else finalMessage = `[${randomService.name}] ` + finalMessage;
+            
+            const randomSuffix = String(generateRandomNumber(1, 100)).padStart(2, '0');
+            const rangeName = `${randomCountry.name}-THIRDW-${randomSuffix}`;
+            const randomPrice = (Math.random() * (0.03 - 0.01) + 0.01).toFixed(4);
+
+            const newItem = document.createElement('div');
+            newItem.className = 'number-item';
+            newItem.style.animation = 'fadeIn 0.5s ease-out';
+            
+            newItem.innerHTML = `
+                <div class="item-left">
+                    <div class="item-title">${rangeName}</div>
+                    <div class="item-number">+${phoneNumber}</div>
+                    <div class="item-message">${finalMessage}</div>
+                </div>
+                <div class="item-right">
+                    <div class="time-info"><div class="seconds">1s</div><div class="clock">${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div></div>
+                    <div class="service-icon ${randomService.icon}">${randomService.text}</div>
+                    <div class="price">$${randomPrice}</div>
+                    <button class="btn-add-number" onclick="openModal('${randomCountry.name}', '${randomCountry.code}', '${randomSuffix}', '$${randomPrice}')"><i class="fa-solid fa-plus"></i></button>
+                </div>
+            `;
+
+            const list = document.querySelector('.number-list');
+            list.prepend(newItem);
+            if (list.children.length > 20) list.removeChild(list.lastElementChild);
+        }
+
+        setInterval(generateNewNumber, 8000);
+
+        // LOGIKA MODAL ADD NUMBERS
+        const modal = document.getElementById('addNumbersModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelModalBtn = document.getElementById('cancelModalBtn');
+        const rangeSelect = document.getElementById('rangeSelect');
+        const terminationValue = document.getElementById('terminationValue');
+        const rateValue = document.getElementById('rateValue');
+        const smsHourValue = document.getElementById('smsHourValue');
+        const smsDayValue = document.getElementById('smsDayValue');
+        const qtyBtns = document.querySelectorAll('.qty-btn');
+
+        let selectedQuantity = 0;
+        let currentCountryCode = "";
+
+        window.openModal = function(countryName, countryCode, currentSuffix, currentPrice) {
+            currentCountryCode = countryCode;
+            rangeSelect.innerHTML = '<option value="" disabled selected>Select a range...</option>';
+            terminationValue.textContent = '-';
+            rateValue.textContent = currentPrice + ' USD';
+            smsHourValue.textContent = '-';
+            smsDayValue.textContent = '-';
+            qtyBtns.forEach(btn => btn.classList.remove('active'));
+
+            for (let i = 1; i <= 100; i++) {
+                const suffix = String(i).padStart(2, '0');
+                const option = document.createElement('option');
+                option.value = `${countryName}-THIRDW-${suffix}`;
+                option.textContent = option.value;
+                if (suffix === currentSuffix) option.textContent += " (Current)";
+                rangeSelect.appendChild(option);
+            }
+            modal.classList.add('active');
+        }
+
+        closeModalBtn.addEventListener('click', () => modal.classList.remove('active'));
+        cancelModalBtn.addEventListener('click', () => modal.classList.remove('active'));
+
+        rangeSelect.addEventListener('change', function() {
+            terminationValue.textContent = this.value;
+            const randomSmsHour = Math.floor(Math.random() * (800 - 200 + 1)) + 200;
+            smsHourValue.textContent = randomSmsHour.toLocaleString();
+            smsDayValue.textContent = (randomSmsHour * 24).toLocaleString();
+        });
+
+        qtyBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                qtyBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedQuantity = parseInt(this.getAttribute('data-qty'));
+            });
+        });
+
+        document.getElementById('submitAddBtn').addEventListener('click', function() {
+            if (rangeSelect.value === "") {
+                showAlert("Please select a range first.", "error");
+                return;
+            }
+            if (selectedQuantity === 0) {
+                showAlert("Please select the quantity of numbers you want to request.", "error");
+                return;
+            }
+
+            const fileName = rangeSelect.value; 
+            const countryName = fileName.split('-')[0]; 
+            
+            let myNumbers = JSON.parse(localStorage.getItem('myNumbers')) || [];
+            let fileContent = "";
+            const waktuSekarang = new Date().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' });
+
+            for (let i = 0; i < selectedQuantity; i++) {
+                const randomPhone = generatePhoneNumberByCode(currentCountryCode);
+                fileContent += `+${randomPhone}\n`;
+                myNumbers.push({ number: `+${randomPhone}`, range: fileName, country: countryName, price: rateValue.textContent, time: waktuSekarang });
+            }
+
+            localStorage.setItem('myNumbers', JSON.stringify(myNumbers));
+
+            const blob = new Blob([fileContent], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none'; a.href = url; a.download = `${fileName}.txt`;
+            document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url);
+
+            showAlert(`Berhasil mengunduh ${selectedQuantity} nomor dari ${fileName}. Silakan cek halaman My Numbers.`, 'success');
+            modal.classList.remove('active');
+        });
+
+        // PERBAIKAN TOMBOL HAMBURGER MENU
+        setTimeout(() => {
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const closeMenu = document.getElementById('closeMenu');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', function(e) { e.preventDefault(); sidebar.classList.add('active'); if(sidebarOverlay) sidebarOverlay.classList.add('active'); });
+            }
+            if (closeMenu && sidebar) {
+                closeMenu.addEventListener('click', function() { sidebar.classList.remove('active'); if(sidebarOverlay) sidebarOverlay.classList.remove('active'); });
+            }
+            if (sidebarOverlay && sidebar) {
+                sidebarOverlay.addEventListener('click', function() { sidebar.classList.remove('active'); sidebarOverlay.classList.remove('active'); });
+            }
+        }, 500);
+    </script>
+</body>
+</html>

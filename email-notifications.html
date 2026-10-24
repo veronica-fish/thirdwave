@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Notifications - ThirdWave SMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        .page-header { margin-bottom: 24px; }
+        .page-header h1 { font-size: 1.5rem; color: var(--text-main); margin-bottom: 4px; }
+        .page-header p { font-size: 0.9rem; color: var(--text-muted); }
+
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .card-header { padding: 16px 24px; border-bottom: 1px solid var(--border-color); font-size: 1rem; font-weight: 500; color: var(--text-main); }
+        .card-body { padding: 24px; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 0.9rem; font-weight: 500; color: var(--text-main); margin-bottom: 8px; }
+        .form-control { width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 6px; font-family: var(--font-family); font-size: 0.9rem; color: var(--text-main); outline: none; background-color: #FAFAFA; }
+        .form-control:focus { border-color: var(--primary-blue); background-color: #fff; }
+
+        .security-note { background-color: #FAFAFA; border: 1px solid var(--border-color); border-radius: 6px; padding: 16px; font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 24px; }
+
+        .checkbox-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+        .checkbox-item { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .checkbox-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary-blue); }
+        .checkbox-item span { font-size: 0.95rem; color: var(--text-main); font-weight: 500; }
+
+        .btn-save { background-color: #4F46E5; color: white; border: none; padding: 10px 24px; border-radius: 20px; font-size: 0.9rem; font-weight: 500; font-family: var(--font-family); cursor: pointer; transition: background 0.2s; }
+        .btn-save:hover { background-color: #4338CA; }
+
+        .test-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+        .btn-test { background-color: #FAFAFA; border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; color: var(--text-main); font-weight: 500; cursor: pointer; font-family: var(--font-family); transition: 0.2s; }
+        .btn-test:hover { background-color: #F3F4F6; }
+        
+        .footer-text { font-size: 0.85rem; color: var(--text-muted); }
+        .footer-text a { color: var(--primary-blue); text-decoration: none; }
+        .footer-text a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar-container"></div>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <div class="page-title">
+                    <h1>Email notifications</h1>
+                    <p>ZeptoMail delivery respects these toggles (security emails always send).</p>
+                </div>
+            </div>
+            
+            <div class="user-profile">
+                <a href="alerts.html" class="notification" title="In-app Alerts">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                </a>
+                <div class="profile-trigger" id="profileTrigger">
+                    <div class="avatar" id="userAvatar">D</div>
+                    <div class="profile-info">
+                        <span class="profile-name" id="headerUsername">Developer</span>
+                        <span class="profile-email" id="headerEmail">dev@thirdwave.cc</span>
+                    </div>
+                    <svg class="chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="settings.html?tab=profile" class="dropdown-item">My Profile</a>
+                    <a href="settings.html?tab=security" class="dropdown-item">Account Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item" id="logoutBtn">Sign Out</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- CARD 1: PREFERENCES -->
+        <div class="card">
+            <div class="card-header">Preferences</div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>Override delivery email (optional)</label>
+                    <input type="email" class="form-control" placeholder="">
+                </div>
+
+                <div class="security-note">
+                    Security email (password resets, 2FA changes, role updates, account state) always sends — cannot be disabled.
+                </div>
+
+                <div class="checkbox-list">
+                    <label class="checkbox-item"><input type="checkbox" id="signinAlert"><span>New sign-in alerts</span></label>
+                    <label class="checkbox-item"><input type="checkbox" id="rangeAlert"><span>Range / allocation changes</span></label>
+                    <label class="checkbox-item"><input type="checkbox" id="financeAlert"><span>Finance (payouts, statements, advances)</span></label>
+                    <label class="checkbox-item"><input type="checkbox" id="marketingAlert"><span>Marketing / product updates</span></label>
+                </div>
+
+                <button class="btn-save" onclick="savePreferences()">Save</button>
+            </div>
+        </div>
+
+        <!-- CARD 2: SEND ME A TEST -->
+        <div class="card">
+            <div class="card-header">Send me a test</div>
+            <div class="card-body">
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px;">
+                    Queues a sample message for the matching category (respects toggles above except security tests).
+                </p>
+                <div class="test-buttons">
+                    <button class="btn-test" onclick="sendTest('Security')">Security sample</button>
+                    <button class="btn-test" onclick="sendTest('Login alert')">Login alert</button>
+                    <button class="btn-test" onclick="sendTest('Allocations')">Allocations</button>
+                    <button class="btn-test" onclick="sendTest('Finance')">Finance</button>
+                    <button class="btn-test" onclick="sendTest('Marketing')">Marketing / digest</button>
+                </div>
+            </div>
+        </div>
+
+        <p class="footer-text">In-app bell notifications are on <a href="alerts.html">/my/alerts</a>.</p>
+    </main>
+
+    <script src="menu.js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        function savePreferences() {
+            showAlert('Preferences saved successfully!', 'success');
+        }
+
+        function sendTest(category) {
+            showAlert(`A test email for "${category}" has been queued to your email address.`, 'info');
+        }
+    </script>
+</body>
+</html>
