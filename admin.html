@@ -172,7 +172,7 @@
         if(btnCloseUser) btnCloseUser.addEventListener('click', toggleModalUser);
         if(btnCancelUser) btnCancelUser.addEventListener('click', toggleModalUser);
 
-        // --- 3. LOGIKA TAMBAH USER BARU (TANPA JSON.STRINGIFY) ---
+        // --- 3. LOGIKA TAMBAH USER BARU (DENGAN JSON.STRINGIFY) ---
         const createUserForm = document.getElementById('createAccountForm');
         if (createUserForm) {
             createUserForm.addEventListener('submit', async function(e) {
@@ -187,10 +187,10 @@
                 btnSubmit.disabled = true;
 
                 try {
-                    // PENTING: Kirim objek langsung (tanpa JSON.stringify)
+                    // PENTING: Wajib menggunakan JSON.stringify
                     const execution = await functions.createExecution(
-                        '6add98f3002bdce8b245', // <--- Function ID Anda
-                        { email: email, password: password, name: username }
+                        '6add98f3002bdce8b245', 
+                        JSON.stringify({ email: email, password: password, name: username })
                     );
                     
                     const result = JSON.parse(execution.responseBody);
