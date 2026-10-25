@@ -10,24 +10,33 @@ module.exports = async function (req, res) {
     const users = new Users(client);
 
     try {
-        // PENTING: Membaca req.body (karena data dikirim sebagai string JSON)
-        const payload = JSON.parse(req.body);
-        
-        if (!payload.email || !payload.password || !payload.name) {
-            return res.json({ success: false, error: 'Data tidak lengkap.' });
+        // 1. Tampilkan data yang masuk ke log (untuk memastikan data tidak kosong)
+        console.log("Data masuk:", req.bodyJson);
+        console.log("Data string:", req.body);
+
+        // 2. Ambil data (mendukung format objek maupun string)
+        let data = req.bodyJson;
+        if (!data && req.body) {
+            data = JSON.parse(req.body);
         }
 
+        if (!data || !data.email) {
+            return res.json({ success: false, error: 'Data email tidak diterima oleh server.' });
+        }
+
+        // 3. Buat User
         const newUser = await users.create(
             'unique()', 
-            payload.email, 
+            data.email, 
             undefined, 
-            payload.password, 
-            payload.name
+            data.password, 
+            data.name
         );
         
         res.json({ success: true, message: 'User created', userId: newUser.$id });
         
     } catch (error) {
+        console.error("Error Detail:", error);
         res.json({ success: false, error: error.message });
     }
 };
