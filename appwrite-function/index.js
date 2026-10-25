@@ -10,11 +10,11 @@ module.exports = async function (req, res) {
     const users = new Users(client);
 
     try {
-        // LANGSUNG gunakan req.bodyJson. Jangan pakai JSON.parse
-        const payload = req.bodyJson;
+        // Karena data dikirim sebagai string dari frontend, kita perlu parse
+        const payload = JSON.parse(req.body);
         
         if (!payload || !payload.email || !payload.password || !payload.name) {
-            return res.json({ success: false, error: 'Data tidak lengkap atau kosong.' });
+            return res.json({ success: false, error: 'Data tidak lengkap.' });
         }
 
         const newUser = await users.create(
