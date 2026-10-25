@@ -149,15 +149,16 @@
     <script src="menu.js"></script>
     <script src="script.js"></script>
     
-    <!-- Script Khusus Admin -->
+    <!-- Script Khusus Admin (TANPA CLOUD FUNCTION) -->
     <script>
         // --- 1. KONFIGURASI APPWRITE ---
         const client = new Appwrite.Client();
         client.setEndpoint('https://fra.cloud.appwrite.io/v1').setProject('6adce24f00120ccc01ce');
-        const functions = new Appwrite.Functions(client);
+        
+        // Gunakan Account dan Databases secara langsung
+        const account = new Appwrite.Account(client);
         const databases = new Appwrite.Databases(client); 
         
-        // ID ASLI DARI APPWRITE ANDA
         const DB_ID = '6adcea36002f439b79ca';
         const COLL_ID = '6adceb90003567b87102';
 
@@ -172,7 +173,7 @@
         if(btnCloseUser) btnCloseUser.addEventListener('click', toggleModalUser);
         if(btnCancelUser) btnCancelUser.addEventListener('click', toggleModalUser);
 
-        // --- 3. LOGIKA TAMBAH USER BARU (DENGAN JSON.STRINGIFY) ---
+        // --- 3. LOGIKA TAMBAH USER BARU (LANGSUNG SDK) ---
         const createUserForm = document.getElementById('createAccountForm');
         if (createUserForm) {
             createUserForm.addEventListener('submit', async function(e) {
@@ -187,33 +188,32 @@
                 btnSubmit.disabled = true;
 
                 try {
-                    // PENTING: Wajib menggunakan JSON.stringify
-                    const execution = await functions.createExecution(
-                        '6add98f3002bdce8b245', 
-                        JSON.stringify({ email: email, password: password, name: username })
+                    // Membuat akun user baru langsung via Appwrite Auth
+                    await account.create(
+                        Appwrite.ID.unique(), // ID Unik
+                        email,                // Email
+                        password,             // Password
+                        username              // Name
                     );
                     
-                    const result = JSON.parse(execution.responseBody);
+                    alert('Akun berhasil dibuat!');
                     
-                    if (result.success) {
-                        alert('Akun berhasil dibuat di Appwrite!');
-                        const tbody = document.getElementById('userTableBody');
-                        const newRow = document.createElement('tr');
-                        newRow.innerHTML = `
-                            <td><strong>${username}</strong></td>
-                            <td>${email}</td>
-                            <td><span style="color: #10B981; font-weight: 600;">Active</span></td>
-                            <td><button class="btn-delete">Delete</button></td>
-                        `;
-                        tbody.prepend(newRow);
-                        this.reset();
-                        toggleModalUser();
-                    } else {
-                        alert('Gagal membuat akun: ' + result.error);
-                    }
+                    // Tambahkan baris ke tabel UI
+                    const tbody = document.getElementById('userTableBody');
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td><strong>${username}</strong></td>
+                        <td>${email}</td>
+                        <td><span style="color: #10B981; font-weight: 600;">Active</span></td>
+                        <td><button class="btn-delete">Delete</button></td>
+                    `;
+                    tbody.prepend(newRow);
+                    this.reset();
+                    toggleModalUser();
+                    
                 } catch (error) {
-                    console.error(error);
-                    alert('Error Sistem: ' + error.message);
+                    console.error("Appwrite Error:", error);
+                    alert('Gagal membuat akun: ' + error.message);
                 } finally {
                     btnSubmit.textContent = 'Save Account';
                     btnSubmit.disabled = false;
