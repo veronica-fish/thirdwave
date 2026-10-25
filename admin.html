@@ -172,7 +172,7 @@
         if(btnCloseUser) btnCloseUser.addEventListener('click', toggleModalUser);
         if(btnCancelUser) btnCancelUser.addEventListener('click', toggleModalUser);
 
-        // --- 3. LOGIKA TAMBAH USER BARU (DENGAN PESAN ERROR SPESIFIK) ---
+        // --- 3. LOGIKA TAMBAH USER BARU (TANPA JSON.STRINGIFY) ---
         const createUserForm = document.getElementById('createAccountForm');
         if (createUserForm) {
             createUserForm.addEventListener('submit', async function(e) {
@@ -187,10 +187,10 @@
                 btnSubmit.disabled = true;
 
                 try {
-                    // Panggil fungsi
+                    // PENTING: Kirim objek langsung (tanpa JSON.stringify)
                     const execution = await functions.createExecution(
-                        '6add98f3002bdce8b245', 
-                        JSON.stringify({ email: email, password: password, name: username })
+                        '6add98f3002bdce8b245', // <--- Function ID Anda
+                        { email: email, password: password, name: username }
                     );
                     
                     const result = JSON.parse(execution.responseBody);
@@ -209,12 +209,10 @@
                         this.reset();
                         toggleModalUser();
                     } else {
-                        // Tampilkan error asli dari fungsi
                         alert('Gagal membuat akun: ' + result.error);
                     }
                 } catch (error) {
-                    console.error("Appwrite Error:", error);
-                    // Tampilkan error teknis agar kita tahu masalahnya
+                    console.error(error);
                     alert('Error Sistem: ' + error.message);
                 } finally {
                     btnSubmit.textContent = 'Save Account';
@@ -228,7 +226,47 @@
         if (newsForm) {
             newsForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                // ... (kode news tetap sama)
+                
+                const dateVal = document.getElementById('newsDate').value;
+                const headVal = document.getElementById('newsHeadline').value;
+                const textVal = document.getElementById('newsText').value;
+                const btnSubmit = document.getElementById('btnSaveNews');
+
+                btnSubmit.textContent = 'Saving...';
+                btnSubmit.disabled = true;
+
+                try {
+                    let doc1Exists = true;
+                    try { await databases.getDocument(DB_ID, COLL_ID, 'news_1'); } 
+                    catch(err) { doc1Exists = false; }
+
+                    if (!doc1Exists) {
+                        await databases.createDocument(DB_ID, COLL_ID, 'news_1', {
+                            date: dateVal, headline: headVal, news_text: textVal
+                        });
+                        alert('Berita ke-1 berhasil ditambahkan!');
+                    } else {
+                        let doc2Exists = true;
+                        try { await databases.getDocument(DB_ID, COLL_ID, 'news_2'); } 
+                        catch(err) { doc2Exists = false; }
+
+                        if (!doc2Exists) {
+                            await databases.createDocument(DB_ID, COLL_ID, 'news_2', {
+                                date: dateVal, headline: headVal, news_text: textVal
+                            });
+                            alert('Berita ke-2 berhasil ditambahkan!');
+                        } else {
+                            alert('Gagal: Batas maksimal 2 berita sudah tercapai!');
+                        }
+                    }
+                    this.reset();
+                } catch (error) {
+                    console.error(error);
+                    alert('Terjadi kesalahan saat menyimpan berita.');
+                } finally {
+                    btnSubmit.textContent = 'Add News';
+                    btnSubmit.disabled = false;
+                }
             });
         }
     </script>
