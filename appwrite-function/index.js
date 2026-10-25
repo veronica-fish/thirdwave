@@ -10,16 +10,13 @@ module.exports = async function (req, res) {
     const users = new Users(client);
 
     try {
-        // PERBAIKAN: Menggunakan req.bodyJson, bukan JSON.parse(req.payload)
-        // Fallback ke {} jika body kosong agar tidak error
-        const payload = req.bodyJson || {};
+        // PENTING: Membaca req.body (karena data dikirim sebagai string JSON)
+        const payload = JSON.parse(req.body);
         
-        // Validasi sederhana untuk memastikan data ada
         if (!payload.email || !payload.password || !payload.name) {
-            return res.json({ success: false, error: 'Data tidak lengkap (email, password, name wajib ada).' });
+            return res.json({ success: false, error: 'Data tidak lengkap.' });
         }
 
-        // Membuat user baru
         const newUser = await users.create(
             'unique()', 
             payload.email, 
@@ -28,11 +25,9 @@ module.exports = async function (req, res) {
             payload.name
         );
         
-        // Mengembalikan respons sukses
-        res.json({ success: true, message: 'User created successfully', userId: newUser.$id });
+        res.json({ success: true, message: 'User created', userId: newUser.$id });
         
     } catch (error) {
-        // Mengembalikan respons error jika gagal
         res.json({ success: false, error: error.message });
     }
 };
