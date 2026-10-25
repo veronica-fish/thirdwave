@@ -22,7 +22,7 @@
         .form-control:focus { border-color: var(--primary-blue); background-color: #FFFFFF; }
         .btn-signin { width: 100%; background-color: var(--primary-blue); color: white; border: none; padding: 14px; border-radius: 30px; font-size: 1rem; font-weight: 600; font-family: var(--font-family); cursor: pointer; transition: background 0.3s; margin-top: 10px; }
         .btn-signin:hover { background-color: #083B7A; }
-        .error-message { display: none; background-color: #FEE2E2; color: #B91C1C; padding: 10px; border-radius: 6px; font-size: 0.85rem; text-align: center; margin-bottom: 15px; border: 1px solid #F87171; }
+        .error-message { display: none; background-color: #FEE2E2; color: #B91C1C; padding: 10px; border-radius: 6px; font-size: 0.85rem; text-align: center; margin-bottom: 15px; border: 1px solid #F87171; word-wrap: break-word; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -74,11 +74,13 @@
             }
 
             try {
-                // Proses login ke Appwrite
-                await account.createEmailSession(inputUser, pass);
+                // 1. Coba hapus sesi lama (jika ada)
+                await account.deleteSession('current').catch(() => {});
+                
+                // 2. Proses login ke Appwrite
+                await account.createEmailPasswordSession(inputUser, pass);
                 
                 // JIKA BERHASIL LOGIN:
-                // Kita cek, apakah emailnya dons1@thirdwave.cc (Admin)?
                 if (inputUser === 'dons1@thirdwave.cc') {
                     window.location.href = 'admin.html';
                 } else {
@@ -86,7 +88,22 @@
                 }
 
             } catch (error) {
-                console.error(error);
+                console.error("Appwrite Error:", error);
+                
+                // --- MENAMPILKAN PESAN ERROR SPESIFIK ---
+                let pesanError = "Terjadi kesalahan.";
+                
+                if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
+                    pesanError = "Error Jaringan/CORS: Pastikan domain sudah didaftarkan di menu 'Platforms' Appwrite.";
+                } else if (error.message.includes("Invalid credentials")) {
+                    pesanError = "Email/Password salah. Pastikan akun dons1@thirdwave.cc dibuat dengan password yang benar di Appwrite Console.";
+                } else if (error.message.includes("Creation of a session is prohibited")) {
+                    pesanError = "Sesi masih aktif. Silakan muat ulang halaman (Refresh) atau hapus sesi di Appwrite Console.";
+                } else {
+                    pesanError = error.message; // Tampilkan pesan asli dari Appwrite
+                }
+                
+                errorMsg.textContent = pesanError;
                 errorMsg.style.display = 'block';
             } finally {
                 btnLogin.textContent = 'Sign In';
