@@ -150,15 +150,19 @@
     <script src="menu.js"></script>
     <script src="script.js"></script>
     
+    <!-- Script Khusus Admin -->
     <script>
+        // --- 1. KONFIGURASI APPWRITE ---
         const client = new Appwrite.Client();
         client.setEndpoint('https://fra.cloud.appwrite.io/v1').setProject('6adce24f00120ccc01ce');
         const functions = new Appwrite.Functions(client);
         const databases = new Appwrite.Databases(client); 
         
+        // ID ASLI DARI APPWRITE ANDA
         const DB_ID = '6adcea36002f439b79ca';
         const COLL_ID = '6adceb90003567b87102';
 
+        // --- 2. LOGIKA MODAL TAMBAH USER ---
         const modalUser = document.getElementById('accountModal');
         const btnAddUser = document.getElementById('btnAddAccount');
         const btnCloseUser = document.getElementById('btnCloseModal');
@@ -169,6 +173,7 @@
         if(btnCloseUser) btnCloseUser.addEventListener('click', toggleModalUser);
         if(btnCancelUser) btnCancelUser.addEventListener('click', toggleModalUser);
 
+        // --- 3. LOGIKA TAMBAH USER BARU (VIA CLOUD FUNCTION) ---
         const createUserForm = document.getElementById('createAccountForm');
         if (createUserForm) {
             createUserForm.addEventListener('submit', async function(e) {
@@ -183,8 +188,9 @@
                 btnSubmit.disabled = true;
 
                 try {
+                    // Memanggil Cloud Function dengan ID yang sudah dimasukkan
                     const execution = await functions.createExecution(
-                        'MASUKKAN_FUNCTION_ID_CLOUD_FUNCTION_ANDA',
+                        '6add98f3002bdce8b245', // <--- Function ID Anda
                         JSON.stringify({ email: email, password: password, name: username })
                     );
                     
@@ -208,7 +214,7 @@
                     }
                 } catch (error) {
                     console.error(error);
-                    alert('Terjadi kesalahan sistem. Pastikan Cloud Function sudah di-deploy.');
+                    alert('Terjadi kesalahan sistem. Pastikan Cloud Function sudah di-deploy dan API Key valid.');
                 } finally {
                     btnSubmit.textContent = 'Save Account';
                     btnSubmit.disabled = false;
@@ -216,6 +222,7 @@
             });
         }
 
+        // --- 4. LOGIKA TAMBAH NEWS (MAKSIMAL 2) ---
         const newsForm = document.getElementById('newsForm');
         if (newsForm) {
             newsForm.addEventListener('submit', async function(e) {
