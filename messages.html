@@ -5,70 +5,113 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Messages - ThirdWave SMS</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    
+    <!-- Wajib ada agar script.js tidak error -->
     <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.0"></script>
     
-    <!-- CSS Khusus Halaman Messages -->
+    <link rel="stylesheet" href="style.css">
+    
     <style>
-        .page-header-subtitle { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; }
+        /* =========================================
+           CSS KHUSUS HALAMAN MY MESSAGES (MODERN & COLORFUL)
+           ========================================= */
         
-        .revenue-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
-        .revenue-card { 
-            background: #fff; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-        }
-        .revenue-card h4 { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; font-weight: 500;}
-        .revenue-card .value { font-size: 1.2rem; font-weight: 600; color: var(--text-main); margin-bottom: 5px; }
-        .revenue-card .desc { font-size: 0.75rem; color: #9CA3AF; }
+        /* Header Halaman */
+        .page-header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .page-header h1 { font-size: 1.5rem; color: var(--text-main); margin-bottom: 4px; font-weight: 700; }
+        .page-header p { font-size: 0.9rem; color: var(--text-muted); }
 
-        .filter-card {
-            background: #fff; border-radius: 12px; padding: 24px; border: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 24px;
+        /* Grid Ringkasan (Revenue) */
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 24px; }
+        .summary-card { 
+            padding: 20px; border-radius: 12px; position: relative; overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: transform 0.2s ease;
         }
-        .filter-title { font-size: 1.1rem; color: var(--text-main); margin-bottom: 20px; font-weight: 600; }
+        .summary-card:hover { transform: translateY(-3px); }
         
-        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .filter-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
-        .filter-group label span { font-weight: 400; color: var(--text-muted); font-size: 0.8rem; margin-left: 5px; }
-        
-        .filter-actions { display: flex; gap: 12px; margin-top: 10px; }
-        .btn-filter {
-            background: #4F46E5; color: #fff; border: none; padding: 10px 24px; border-radius: 8px;
-            font-family: var(--font-family); font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px;
-        }
-        .btn-filter:hover { background: #4338CA; }
-        
-        .btn-reset {
-            background: transparent; color: var(--text-main); border: 1px solid var(--border-color); 
-            padding: 10px 20px; border-radius: 8px; font-family: var(--font-family); font-weight: 500; 
-            cursor: pointer; display: flex; align-items: center; gap: 8px;
-        }
-        .btn-reset:hover { background: #F9FAFB; }
+        /* Warna Background Tiap Kartu Ringkasan */
+        .bg-blue-light { background: linear-gradient(135deg, #EFF6FF, #DBEAFE); border: 1px solid #BFDBFE; }
+        .bg-green-light { background: linear-gradient(135deg, #F0FDF4, #DCFCE7); border: 1px solid #BBF7D0; }
+        .bg-orange-light { background: linear-gradient(135deg, #FFF7ED, #FFEDD5); border: 1px solid #FED7AA; }
+        .bg-purple-light { background: linear-gradient(135deg, #FAF5FF, #F3E8FF); border: 1px solid #E9D5FF; }
 
-        .table-card {
-            background: #fff; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-        }
-        .table-toolbar {
-            padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .table-toolbar .rows-info { font-size: 0.85rem; color: var(--text-muted); }
+        .summary-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .summary-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; background: #FFF; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        .icon-blue { color: #1D4ED8; } .icon-green { color: #15803D; } .icon-orange { color: #C2410C; } .icon-purple { color: #6B21A8; }
         
-        .empty-state {
-            padding: 60px 20px; text-align: center; color: var(--text-muted); display: flex;
-            flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+        .summary-card h4 { font-size: 0.85rem; color: #4B5563; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
+        .summary-card .value { font-size: 1.6rem; font-weight: 800; color: #1F2937; margin-bottom: 4px; }
+        .summary-card .desc { font-size: 0.75rem; color: #6B7280; }
+
+        /* Panel Filter */
+        .filter-panel { 
+            background: #FFFFFF; border-radius: 12px; border: 1px solid var(--border-color); 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 24px; overflow: hidden;
         }
-        .empty-state svg { width: 40px; height: 40px; stroke: #D1D5DB; margin-bottom: 10px; }
+        .filter-header { padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; background: #F8FAFC; }
+        .filter-header h3 { font-size: 1rem; color: var(--text-main); font-weight: 600; }
+        .filter-body { padding: 24px; }
         
-        /* Badge Live */
-        .badge-live {
-            background-color: #10B981; color: white; padding: 4px 12px; border-radius: 20px;
-            font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;
+        .filter-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 24px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 8px; }
+        .form-group label span { font-weight: 400; color: var(--text-muted); font-size: 0.8rem;}
+        
+        .form-control { 
+            width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); 
+            border-radius: 8px; font-family: var(--font-family); font-size: 0.9rem; 
+            color: var(--text-main); outline: none; background: #FAFAFA; transition: 0.2s;
         }
+        .form-control:focus { border-color: var(--primary-blue); background: #FFF; box-shadow: 0 0 0 3px rgba(10, 75, 156, 0.1); }
         
+        .filter-actions { display: flex; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 20px; }
+        .btn-filter { 
+            background: var(--primary-blue); color: #fff; border: none; padding: 10px 20px; 
+            border-radius: 8px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.9rem;
+            box-shadow: 0 2px 4px rgba(10, 75, 156, 0.2); transition: 0.2s;
+        }
+        .btn-filter:hover { background: #083B7A; transform: translateY(-1px); }
+        .btn-reset { 
+            background: #F3F4F6; color: var(--text-main); border: 1px solid var(--border-color); 
+            padding: 10px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.9rem;
+        }
+        .btn-reset:hover { background: #E5E7EB; }
+
+        /* Tabel Modern */
+        .table-container { background: #FFFFFF; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.02); overflow: hidden; }
+        
+        .table-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid var(--border-color); background: #F8FAFC; }
+        .table-toolbar-left { display: flex; align-items: center; gap: 12px; font-size: 0.85rem; color: var(--text-muted); }
+        .toolbar-btn { 
+            background: #FFF; border: 1px solid var(--border-color); padding: 6px 12px; 
+            border-radius: 6px; font-size: 0.8rem; color: var(--text-main); cursor: pointer; display: flex; align-items: center; gap: 6px; 
+            transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+        .toolbar-btn:hover { background: #F3F4F6; border-color: #D1D5DB; }
+
+        .table-responsive { overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .data-table th { 
+            padding: 14px 24px; border-bottom: 1px solid var(--border-color); 
+            color: #4B5563; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;
+            white-space: nowrap; background: #F9FAFB;
+        }
+        .data-table td { padding: 16px 24px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; color: var(--text-main); }
+        .data-table tbody tr:hover { background-color: #F8FAFC; }
+        
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .empty-state svg { width: 48px; height: 48px; stroke: #93C5FD; margin-bottom: 16px; }
+
+        /* Pagination */
+        .pagination { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-top: 1px solid var(--border-color); background: #F8FAFC; }
+        .pagination-text { font-size: 0.85rem; color: var(--text-muted); }
+        .pagination-controls { display: flex; gap: 8px; }
+        .page-btn { background: #FFF; border: 1px solid var(--border-color); color: var(--text-main); width: 32px; height: 32px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: 500; transition: 0.2s;}
+        .page-btn.active { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); box-shadow: 0 2px 4px rgba(10, 75, 156, 0.2); }
+        .page-btn:hover:not(.active) { background: #F3F4F6; }
+
         @media (max-width: 768px) {
-            .revenue-grid, .filter-grid { grid-template-columns: 1fr; }
+            .filter-grid { grid-template-columns: 1fr; }
+            .table-toolbar { flex-direction: column; align-items: flex-start; gap: 12px; }
         }
     </style>
 </head>
@@ -77,128 +120,167 @@
     <div id="sidebar-container"></div>
 
     <main class="main-content">
-        <!-- TOP HEADER -->
-        <header class="top-header" style="align-items: flex-start;">
+        
+        <!-- HEADER -->
+        <header class="top-header">
             <div class="header-left">
                 <button class="menu-toggle" id="menuToggle">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
                 <div class="page-title">
                     <h1>My Messages</h1>
-                    <p class="page-header-subtitle">0 total · last 90 days</p>
+                    <p>0 total · last 90 days</p>
                 </div>
             </div>
             
             <div class="user-profile">
-                <span class="badge-live">Live</span>
+                <a href="alerts.html" class="notification" title="In-app Alerts">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                </a>
+                <div class="profile-trigger" id="profileTrigger">
+                    <div class="avatar" id="userAvatar">D</div>
+                    <div class="profile-info">
+                        <span class="profile-name" id="headerUsername">Developer</span>
+                        <span class="profile-email" id="headerEmail">dev@thirdwave.cc</span>
+                    </div>
+                    <svg class="chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="settings.html?tab=profile" class="dropdown-item">My Profile</a>
+                    <a href="settings.html?tab=security" class="dropdown-item">Account Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item" id="logoutBtn">Sign Out</a>
+                </div>
             </div>
         </header>
 
-        <!-- REVENUE SUMMARY -->
-        <div class="revenue-grid">
-            <div class="revenue-card">
-                <h4>Today's revenue</h4>
+        <!-- KARTU RINGKASAN (SUMMARY CARDS BERWARNA) -->
+        <div class="summary-grid">
+            <div class="summary-card bg-blue-light">
+                <div class="summary-header">
+                    <div class="summary-icon icon-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+                    <h4>Today's Revenue</h4>
+                </div>
                 <div class="value">—</div>
                 <div class="desc">today so far, UTC</div>
             </div>
-            <div class="revenue-card">
-                <h4>Yesterday's revenue</h4>
+            
+            <div class="summary-card bg-green-light">
+                <div class="summary-header">
+                    <div class="summary-icon icon-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+                    <h4>Yesterday's Revenue</h4>
+                </div>
                 <div class="value">—</div>
                 <div class="desc">the whole of yesterday</div>
             </div>
-            <div class="revenue-card">
-                <h4>This month's revenue</h4>
+            
+            <div class="summary-card bg-orange-light">
+                <div class="summary-header">
+                    <div class="summary-icon icon-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg></div>
+                    <h4>This Month's Revenue</h4>
+                </div>
                 <div class="value">—</div>
                 <div class="desc">1st of this month to today</div>
             </div>
-            <div class="revenue-card">
-                <h4>Last month's revenue</h4>
+            
+            <div class="summary-card bg-purple-light">
+                <div class="summary-header">
+                    <div class="summary-icon icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div>
+                    <h4>Last Month's Revenue</h4>
+                </div>
                 <div class="value">—</div>
                 <div class="desc">the whole of last month</div>
             </div>
         </div>
 
-        <!-- FILTER MESSAGES -->
-        <div class="filter-card">
-            <div class="filter-title">Filter messages</div>
-            
-            <form id="filterForm">
-                <div class="filter-grid">
-                    <!-- Tanggal -->
-                    <div class="filter-group">
-                        <label>Start date <span>- no dates = last 90 days</span></label>
-                        <input type="date" class="form-control">
-                    </div>
-                    <div class="filter-group">
-                        <label>End date</label>
-                        <input type="date" class="form-control">
+        <!-- PANEL FILTER -->
+        <div class="filter-panel">
+            <div class="filter-header">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary-blue)" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                <h3>Filter Messages</h3>
+            </div>
+            <div class="filter-body">
+                <form id="filterForm">
+                    <div class="filter-grid">
+                        <div class="form-group">
+                            <label>Start Date <span>- no dates = last 90 days</span></label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>End Date</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select class="form-control">
+                                <option value="all">All Status</option>
+                                <option value="accepted">Accepted</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="soft-capped">Soft-capped</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Country <span>- your traffic only</span></label>
+                            <select class="form-control">
+                                <option value="all">All Countries</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Payment Term</label>
+                            <select class="form-control">
+                                <option value="all">All Terms</option>
+                                <option value="30-45">30/45 - Monthly</option>
+                                <option value="7-1">7/1 - Weekly</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Sender</label>
+                            <input type="text" class="form-control" placeholder="Source number / alpha sender">
+                        </div>
+                        <div class="form-group">
+                            <label>Destination</label>
+                            <input type="text" class="form-control" placeholder="4915...">
+                        </div>
+                        <div class="form-group">
+                            <label>SID</label>
+                            <input type="text" class="form-control" placeholder="Amazon, Telegram, WhatsApp...">
+                        </div>
                     </div>
 
-                    <!-- Status & Country -->
-                    <div class="filter-group">
-                        <label>Status</label>
-                        <select class="form-control">
-                            <option value="all">All Status</option>
-                            <option value="accepted">Accepted</option>
-                            <option value="rejected">Rejected</option>
-                            <option value="soft-capped">Soft-capped (allocation limit)</option>
-                        </select>
+                    <div class="filter-actions">
+                        <button type="submit" class="btn-filter">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            Filter
+                        </button>
+                        <button type="reset" class="btn-reset" id="btnResetFilter">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+                            Reset
+                        </button>
                     </div>
-                    <div class="filter-group">
-                        <label>Country <span>- your traffic only</span></label>
-                        <select class="form-control">
-                            <option value="all">All Countries</option>
-                            <!-- Opsi negara bisa ditambahkan di sini -->
-                        </select>
-                    </div>
-
-                    <!-- Payment Term & Sender -->
-                    <div class="filter-group">
-                        <label>Payment term</label>
-                        <select class="form-control">
-                            <option value="all">All Terms</option>
-                            <option value="30-45">30/45 - Monthly</option>
-                            <option value="7-1">7/1 - Weekly</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Sender</label>
-                        <input type="text" class="form-control" placeholder="Source number / alpha sender">
-                    </div>
-
-                    <!-- Destination & SID -->
-                    <div class="filter-group">
-                        <label>Destination</label>
-                        <input type="text" class="form-control" placeholder="4915...">
-                    </div>
-                    <div class="filter-group">
-                        <label>SID</label>
-                        <input type="text" class="form-control" placeholder="Amazon, Telegram, WhatsApp...">
-                    </div>
-                </div>
-
-                <div class="filter-actions">
-                    <button type="submit" class="btn-filter">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                        Filter
-                    </button>
-                    <button type="reset" class="btn-reset" id="btnResetFilter">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
-                        Reset
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
 
-        <!-- TABEL MESSAGES -->
-        <div class="table-card">
-            <!-- Toolbar kecil (menampilkan jumlah baris) -->
+        <!-- TABEL DATA -->
+        <div class="table-container">
             <div class="table-toolbar">
-                <div class="rows-info">Page 1 of 1 (0 records)</div>
+                <div class="table-toolbar-left">
+                    <span>Rows</span>
+                    <select class="form-control" style="width: auto; padding: 4px 8px;">
+                        <option>50</option>
+                        <option>100</option>
+                    </select>
+                    <span>per page</span>
+                </div>
+                <div class="table-toolbar-left">
+                    <button class="toolbar-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg> Columns</button>
+                    <button class="toolbar-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Export</button>
+                    <button class="toolbar-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Print</button>
+                </div>
             </div>
             
             <div class="table-responsive">
-                <table class="modern-table">
+                <table class="data-table">
                     <thead>
                         <tr>
                             <th>Time</th>
@@ -218,13 +300,24 @@
                         <tr>
                             <td colspan="11">
                                 <div class="empty-state">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                                    <p>No messages yet</p>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                    <h3>No messages yet</h3>
+                                    <p>Your incoming messages will appear here.</p>
                                 </div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <div class="pagination-text">Page 1 of 1 (0 records)</div>
+                <div class="pagination-controls">
+                    <button class="page-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+                </div>
             </div>
         </div>
 
@@ -234,18 +327,42 @@
     <script src="script.js"></script>
     
     <script>
-        // Logika untuk form filter (hanya mencegah reload halaman untuk demo)
+        // Logika form filter (mencegah reload)
         document.getElementById('filterForm').addEventListener('submit', function(e) {
             e.preventDefault();
             alert('Fitur Filter sedang disimulasikan. (Data akan dimuat dari Appwrite/Database Anda di masa depan).');
         });
 
-        // Logika Tombol Reset
-        document.getElementById('btnResetFilter').addEventListener('click', function() {
-            // Form otomatis ter-reset karena type="reset"
-            // Kita bisa menambahkan logika refresh tabel di sini
-            console.log('Filter di-reset');
-        });
+        // SCRIPT PENGAMAN: Memastikan tombol hamburger selalu berfungsi
+        setTimeout(() => {
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const closeMenu = document.getElementById('closeMenu');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            if (menuToggle && sidebar) {
+                menuToggle.replaceWith(menuToggle.cloneNode(true));
+                const newMenuToggle = document.getElementById('menuToggle');
+
+                newMenuToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    sidebar.classList.add('active');
+                    if(sidebarOverlay) sidebarOverlay.classList.add('active');
+                });
+            }
+            if (closeMenu && sidebar) {
+                closeMenu.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    if(sidebarOverlay) sidebarOverlay.classList.remove('active');
+                });
+            }
+            if (sidebarOverlay && sidebar) {
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+        }, 500);
     </script>
 </body>
 </html>

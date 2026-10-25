@@ -5,30 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>In-app Alerts - ThirdWave SMS</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Wajib ada agar script.js tidak error -->
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.0"></script>
+    
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* CSS Khusus Halaman In-app Alerts */
+        /* =========================================
+           CSS KHUSUS HALAMAN ALERTS (MODERN & COLORFUL)
+           ========================================= */
         .page-header { margin-bottom: 24px; }
-        .page-header h1 { font-size: 1.5rem; color: var(--text-main); margin-bottom: 4px; }
+        .page-header h1 { font-size: 1.5rem; color: var(--text-main); margin-bottom: 4px; font-weight: 700; }
         .page-header p { font-size: 0.9rem; color: var(--text-muted); }
 
+        /* Kartu Container */
         .alert-card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-            min-height: 250px; /* Agar kotak terlihat cukup besar meski kosong */
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            min-height: 400px;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 40px 20px;
+            padding: 40px 24px;
+            position: relative;
+            overflow: hidden;
         }
 
+        /* Latar belakang hiasan (blob) agar lebih berwarna */
+        .alert-card::before {
+            content: '';
+            position: absolute;
+            top: -50px; right: -50px;
+            width: 150px; height: 150px;
+            background: radial-gradient(circle, rgba(10,75,156,0.08) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            z-index: 0;
+        }
+        .alert-card::after {
+            content: '';
+            position: absolute;
+            bottom: -50px; left: -50px;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(101,184,69,0.08) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        /* Desain Empty State */
         .empty-state {
             text-align: center;
-            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1; /* Di atas hiasan background */
+            max-width: 400px;
+        }
+
+        /* Kotak Ikon Lonceng Berwarna */
+        .icon-wrapper {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+            border: 1px solid #BFDBFE;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.15);
+        }
+
+        .icon-wrapper svg {
+            width: 36px;
+            height: 36px;
+            stroke: #3B82F6; /* Biru cerah */
+        }
+
+        .empty-state h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
             font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .alert-card { min-height: 300px; }
         }
     </style>
 </head>
@@ -38,15 +109,47 @@
 
     <main class="main-content">
         
-        <div class="page-header">
-            <h1>In-app alerts</h1>
-            <p>Notifications delivered to your account</p>
-        </div>
+        <!-- HEADER -->
+        <header class="top-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <div class="page-title">
+                    <h1>In-app alerts</h1>
+                    <p>Notifications delivered to your account</p>
+                </div>
+            </div>
+            
+            <div class="user-profile">
+                <a href="alerts.html" class="notification" title="In-app Alerts">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                </a>
+                <div class="profile-trigger" id="profileTrigger">
+                    <div class="avatar" id="userAvatar">D</div>
+                    <div class="profile-info">
+                        <span class="profile-name" id="headerUsername">Developer</span>
+                        <span class="profile-email" id="headerEmail">dev@thirdwave.cc</span>
+                    </div>
+                    <svg class="chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="settings.html?tab=profile" class="dropdown-item">My Profile</a>
+                    <a href="settings.html?tab=security" class="dropdown-item">Account Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item" id="logoutBtn">Sign Out</a>
+                </div>
+            </div>
+        </header>
 
         <!-- KOTAK NOTIFIKASI -->
         <div class="alert-card">
             <div class="empty-state">
-                No alerts yet.
+                <div class="icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                </div>
+                <h2>No alerts yet.</h2>
+                <p>You're all caught up! Any new notifications regarding your account or traffic will appear right here.</p>
             </div>
         </div>
 
@@ -54,5 +157,36 @@
 
     <script src="menu.js"></script>
     <script src="script.js"></script>
+    
+    <script>
+        // Pengaman Tombol Hamburger
+        setTimeout(() => {
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const closeMenu = document.getElementById('closeMenu');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            if (menuToggle && sidebar) {
+                menuToggle.replaceWith(menuToggle.cloneNode(true));
+                document.getElementById('menuToggle').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    sidebar.classList.add('active');
+                    if(sidebarOverlay) sidebarOverlay.classList.add('active');
+                });
+            }
+            if (closeMenu && sidebar) {
+                closeMenu.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    if(sidebarOverlay) sidebarOverlay.classList.remove('active');
+                });
+            }
+            if (sidebarOverlay && sidebar) {
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+        }, 500);
+    </script>
 </body>
 </html>

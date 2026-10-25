@@ -5,16 +5,128 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - ThirdWave SMS</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    
+    <!-- Wajib ada agar script.js tidak error -->
     <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.0"></script>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* =========================================
+           CSS KHUSUS HALAMAN SETTINGS (MODERN)
+           ========================================= */
+        .page-header { margin-bottom: 24px; }
+        .page-header h1 { font-size: 1.5rem; color: var(--text-main); margin-bottom: 4px; font-weight: 700; }
+        .page-header p { font-size: 0.9rem; color: var(--text-muted); }
+
+        /* Tabs Modern */
+        .settings-tabs-container {
+            display: flex; gap: 8px; background: #F1F5F9; padding: 6px; 
+            border-radius: 12px; margin-bottom: 24px; border: 1px solid var(--border-color);
+        }
+        .settings-tab {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 12px 16px; border-radius: 8px; font-weight: 600; color: #64748B;
+            transition: all 0.3s ease; border: none; background: transparent; cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .settings-tab svg { width: 18px; height: 18px; stroke: currentColor; }
+        .settings-tab:hover { color: var(--primary-blue); }
+        .settings-tab.active {
+            background: #FFFFFF; color: var(--primary-blue); 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Kartu Settings */
+        .settings-card {
+            background-color: #FFFFFF; border-radius: 12px; border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 24px; overflow: hidden;
+        }
+        
+        /* Header Kartu Berwarna */
+        .card-header-settings {
+            padding: 20px 24px; 
+            background: linear-gradient(to right, #F8FAFC, #EFF6FF); 
+            border-bottom: 1px solid var(--border-color);
+        }
+        .card-header-settings h2 { font-size: 1.15rem; color: var(--primary-blue); margin-bottom: 4px; font-weight: 700; }
+        .card-header-settings p { font-size: 0.85rem; color: var(--text-muted); }
+
+        .card-body-settings { padding: 24px; }
+
+        .section-title { 
+            display: flex; align-items: center; gap: 8px; font-size: 0.95rem; 
+            color: var(--text-main); margin-bottom: 20px; font-weight: 700; 
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .section-title svg { width: 20px; height: 20px; stroke: var(--primary-blue); }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-main); }
+        
+        .form-control {
+            padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 8px;
+            font-family: var(--font-family); font-size: 0.9rem; color: var(--text-main);
+            outline: none; transition: all 0.2s; background-color: #FAFAFA;
+        }
+        .form-control:focus { border-color: var(--primary-blue); background-color: #FFFFFF; box-shadow: 0 0 0 3px rgba(10, 75, 156, 0.1); }
+        textarea.form-control { resize: vertical; }
+        .helper-text { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+        .crypto-section { 
+            background-color: #F8FAFC; border: 1px solid #E2E8F0; 
+            border-radius: 10px; padding: 24px; margin-bottom: 24px; 
+        }
+        .crypto-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .crypto-header .section-title { margin-bottom: 0; }
+        .payout-text { font-size: 0.8rem; font-weight: 600; color: var(--secondary-green); background: rgba(101, 184, 69, 0.1); padding: 4px 10px; border-radius: 20px; }
+
+        .alert-info {
+            display: flex; align-items: flex-start; gap: 12px; 
+            background-color: #F0F9FF; border: 1px solid #BAE6FD; border-left: 4px solid #0EA5E9;
+            padding: 16px; border-radius: 8px; margin-bottom: 24px; font-size: 0.85rem; color: #0369A1; line-height: 1.5;
+        }
+        .alert-info svg { width: 20px; height: 20px; stroke: #0EA5E9; flex-shrink: 0; margin-top: 2px;}
+
+        .form-actions { display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 24px; }
+        .btn-primary {
+            display: flex; align-items: center; gap: 8px; background: var(--primary-blue); color: white;
+            border: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; font-family: var(--font-family);
+            font-size: 0.9rem; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(10, 75, 156, 0.2);
+        }
+        .btn-primary:hover { background: #083B7A; transform: translateY(-1px); }
+        .btn-primary svg { width: 16px; height: 16px; stroke: white; }
+
+        /* =========================================
+           LOGIKA TAMPILAN TAB
+           ========================================= */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .crypto-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+        }
+    </style>
 </head>
 <body>
 
+    <!-- PENTING: Container Menu -->
     <div id="sidebar-container"></div>
 
     <main class="main-content">
+        
+        <!-- HEADER -->
         <header class="top-header">
             <div class="header-left">
+                <!-- TOMBOL HAMBURGER -->
                 <button class="menu-toggle" id="menuToggle">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
@@ -25,11 +137,9 @@
             </div>
             
             <div class="user-profile">
-                <!-- Lonceng diubah menjadi tautan -->
                 <a href="alerts.html" class="notification" title="In-app Alerts">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                 </a>
-                
                 <div class="profile-trigger" id="profileTrigger">
                     <div class="avatar" id="userAvatar">D</div>
                     <div class="profile-info">
@@ -38,36 +148,28 @@
                     </div>
                     <svg class="chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </div>
-
                 <div class="profile-dropdown" id="profileDropdown">
-                    <a href="settings.html?tab=profile" class="dropdown-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                        My Profile
-                    </a>
-                    <a href="settings.html?tab=security" class="dropdown-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                        Account Settings
-                    </a>
+                    <a href="settings.html?tab=profile" class="dropdown-item">My Profile</a>
+                    <a href="settings.html?tab=security" class="dropdown-item">Account Settings</a>
                     <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item" id="logoutBtn">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                        Sign Out
-                    </a>
+                    <a href="#" class="dropdown-item" id="logoutBtn">Sign Out</a>
                 </div>
             </div>
         </header>
 
+        <!-- NAVIGASI TAB SETTINGS -->
         <div class="settings-tabs-container">
-            <button type="button" class="settings-tab active" data-target="profile-tab">
+            <button type="button" class="settings-tab active" id="btn-profile">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 Profile
             </button>
-            <button type="button" class="settings-tab" data-target="security-tab">
+            <button type="button" class="settings-tab" id="btn-security">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                 Security
             </button>
         </div>
 
+        <!-- KONTEN TAB 1: PROFILE -->
         <div id="profile-tab" class="tab-content active">
             <div class="settings-card">
                 <div class="card-header-settings">
@@ -75,92 +177,95 @@
                     <p>Update your personal details and payout wallet</p>
                 </div>
                 
-                <form action="#">
-                    <h3 class="section-title">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                        Personal Details
-                    </h3>
-                    
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>First Name</label>
-                            <input type="text" class="form-control" placeholder="Enter first name">
-                        </div>
-                        <div class="form-group">
-                            <label>Last Name</label>
-                            <input type="text" class="form-control" placeholder="Enter last name">
-                        </div>
-                        <div class="form-group">
-                            <label>Country</label>
-                            <input type="text" class="form-control" placeholder="Enter country">
-                        </div>
-                        <div class="form-group">
-                            <label>Mobile</label>
-                            <input type="text" class="form-control" placeholder="Enter mobile number">
-                        </div>
-                        <div class="form-group">
-                            <label>WhatsApp</label>
-                            <input type="text" class="form-control" placeholder="Enter WhatsApp number">
-                        </div>
-                        <div class="form-group">
-                            <label>Skype</label>
-                            <input type="text" class="form-control" placeholder="Enter Skype ID">
-                        </div>
-                        <div class="form-group full-width">
-                            <label>Address</label>
-                            <textarea class="form-control" rows="2" placeholder="Enter full address"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="crypto-section">
-                        <div class="crypto-header">
-                            <h3 class="section-title">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                                Crypto Wallet
-                            </h3>
-                            <span class="payout-text">Weekly USDT payouts (Binance)</span>
-                        </div>
-
+                <div class="card-body-settings">
+                    <form action="#">
+                        <h3 class="section-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            Personal Details
+                        </h3>
+                        
                         <div class="form-grid">
                             <div class="form-group">
-                                <label>Coin</label>
-                                <select class="form-control">
-                                    <option value="USDT">USDT</option>
-                                    <option value="BTC">BTC</option>
-                                    <option value="ETH">ETH</option>
-                                    <option value="BNB">BNB</option>
-                                </select>
+                                <label>First Name</label>
+                                <input type="text" class="form-control" placeholder="Enter first name">
                             </div>
                             <div class="form-group">
-                                <label>Network</label>
-                                <select class="form-control">
-                                    <option value="TRX">TRX (TRON / TRC20)</option>
-                                    <option value="BSC">BSC (BEP20)</option>
-                                    <option value="ETH">ETH (ERC20)</option>
-                                    <option value="BTC">BTC (Bitcoin)</option>
-                                    <option value="Arbitrum">Arbitrum One</option>
-                                    <option value="Optimism">Optimism</option>
-                                    <option value="Polygon">Polygon (MATIC)</option>
-                                </select>
+                                <label>Last Name</label>
+                                <input type="text" class="form-control" placeholder="Enter last name">
+                            </div>
+                            <div class="form-group">
+                                <label>Country</label>
+                                <input type="text" class="form-control" placeholder="Enter country">
+                            </div>
+                            <div class="form-group">
+                                <label>Mobile</label>
+                                <input type="text" class="form-control" placeholder="Enter mobile number">
+                            </div>
+                            <div class="form-group">
+                                <label>WhatsApp</label>
+                                <input type="text" class="form-control" placeholder="Enter WhatsApp number">
+                            </div>
+                            <div class="form-group">
+                                <label>Skype</label>
+                                <input type="text" class="form-control" placeholder="Enter Skype ID">
                             </div>
                             <div class="form-group full-width">
-                                <label>Wallet Address</label>
-                                <input type="text" class="form-control" placeholder="0x... (42 chars total)">
-                                <small class="helper-text">Make sure the address matches the selected network exactly — USDT sent to a wrong-chain address is unrecoverable.</small>
+                                <label>Address</label>
+                                <textarea class="form-control" rows="2" placeholder="Enter full address"></textarea>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-actions">
-                        <button type="button" class="btn-primary">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            Save Profile
-                        </button>
-                    </div>
-                </form>
+                        <div class="crypto-section">
+                            <div class="crypto-header">
+                                <h3 class="section-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                                    Crypto Wallet
+                                </h3>
+                                <span class="payout-text">Weekly USDT payouts (Binance)</span>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Coin</label>
+                                    <select class="form-control">
+                                        <option value="USDT">USDT</option>
+                                        <option value="BTC">BTC</option>
+                                        <option value="ETH">ETH</option>
+                                        <option value="BNB">BNB</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Network</label>
+                                    <select class="form-control">
+                                        <option value="TRX">TRX (TRON / TRC20)</option>
+                                        <option value="BSC">BSC (BEP20)</option>
+                                        <option value="ETH">ETH (ERC20)</option>
+                                        <option value="BTC">BTC (Bitcoin)</option>
+                                        <option value="Arbitrum">Arbitrum One</option>
+                                        <option value="Optimism">Optimism</option>
+                                        <option value="Polygon">Polygon (MATIC)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label>Wallet Address</label>
+                                    <input type="text" class="form-control" placeholder="0x... (42 chars total)">
+                                    <small class="helper-text">Make sure the address matches the selected network exactly — USDT sent to a wrong-chain address is unrecoverable.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-primary">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Save Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 
+        <!-- KONTEN TAB 2: SECURITY -->
         <div id="security-tab" class="tab-content">
             <div class="settings-card">
                 <div class="card-header-settings">
@@ -168,36 +273,40 @@
                     <p>Change your account password</p>
                 </div>
                 
-                <form action="#">
-                    <div class="alert-info">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                        Change your password by entering your current password and choosing a new one.
-                    </div>
-
-                    <div class="form-group" style="margin-bottom: 24px;">
-                        <label>Current Password</label>
-                        <input type="password" class="form-control" style="width: 100%; max-width: 400px;" placeholder="Enter current password">
-                    </div>
-
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>New Password</label>
-                            <input type="password" class="form-control" placeholder="Enter new password">
-                            <small class="helper-text">Minimum 6 characters.</small>
+                <div class="card-body-settings">
+                    <form action="#">
+                        <div class="alert-info">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                            <div>
+                                <strong>Keep your account secure.</strong> Change your password by entering your current password and choosing a new one.
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Confirm Password</label>
-                            <input type="password" class="form-control" placeholder="Confirm new password">
-                        </div>
-                    </div>
 
-                    <div class="form-actions">
-                        <button type="button" class="btn-primary">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                            Change Password
-                        </button>
-                    </div>
-                </form>
+                        <div class="form-group" style="margin-bottom: 24px;">
+                            <label>Current Password</label>
+                            <input type="password" class="form-control" style="max-width: 400px;" placeholder="Enter current password">
+                        </div>
+
+                        <div class="form-grid" style="max-width: 800px;">
+                            <div class="form-group">
+                                <label>New Password</label>
+                                <input type="password" class="form-control" placeholder="Enter new password">
+                                <small class="helper-text">Minimum 6 characters.</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm Password</label>
+                                <input type="password" class="form-control" placeholder="Confirm new password">
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-primary">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                Change Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 
@@ -205,5 +314,56 @@
 
     <script src="menu.js"></script>
     <script src="script.js"></script>
+    
+    <!-- SCRIPT PERBAIKAN (TAB & HAMBURGER MENU) -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            
+            // --- 1. LOGIKA TAB SETTINGS ---
+            const btnProfile = document.getElementById('btn-profile');
+            const btnSecurity = document.getElementById('btn-security');
+            const tabProfile = document.getElementById('profile-tab');
+            const tabSecurity = document.getElementById('security-tab');
+
+            if (btnProfile && btnSecurity) {
+                btnProfile.addEventListener('click', function() {
+                    btnProfile.classList.add('active');
+                    btnSecurity.classList.remove('active');
+                    tabProfile.classList.add('active');
+                    tabSecurity.classList.remove('active');
+                });
+
+                btnSecurity.addEventListener('click', function() {
+                    btnSecurity.classList.add('active');
+                    btnProfile.classList.remove('active');
+                    tabSecurity.classList.add('active');
+                    tabProfile.classList.remove('active');
+                });
+            }
+
+            // --- 2. PERBAIKAN TOMBOL HAMBURGER MENU (EVENT DELEGATION) ---
+            // Teknik ini memastikan tombol bisa diklik kapan saja, 
+            // bahkan jika menu.js lambat dimuat.
+            document.body.addEventListener('click', function(e) {
+                // Jika yang diklik adalah tombol hamburger (atau ikon di dalamnya)
+                if (e.target.closest('#menuToggle')) {
+                    e.preventDefault();
+                    const sidebar = document.getElementById('sidebar');
+                    const sidebarOverlay = document.getElementById('sidebarOverlay');
+                    if (sidebar) sidebar.classList.add('active');
+                    if (sidebarOverlay) sidebarOverlay.classList.add('active');
+                }
+
+                // Jika yang diklik adalah tombol close (X) atau area overlay gelap
+                if (e.target.closest('#closeMenu') || e.target.closest('#sidebarOverlay')) {
+                    e.preventDefault();
+                    const sidebar = document.getElementById('sidebar');
+                    const sidebarOverlay = document.getElementById('sidebarOverlay');
+                    if (sidebar) sidebar.classList.remove('active');
+                    if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
